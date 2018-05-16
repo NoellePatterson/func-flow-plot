@@ -127,7 +127,7 @@ def calc_fall_flush_timings_durations(flow_matrix, summer_timings):
         """Get duration of each fall flush"""
         current_duration, left, right = calc_fall_flush_durations_2(filter_data, start_dates[-1])
         durations[-1] = current_duration
-        #_plotter(x_axis, flow_data, filter_data, wet_filter_data, start_dates, wet_dates, column_number, left, right, maxarray, minarray, min_flush_magnitude)
+        _plotter(x_axis, flow_data, filter_data, wet_filter_data, start_dates, wet_dates, column_number, left, right, maxarray, minarray, min_flush_magnitude)
 
     return start_dates, mags, wet_dates, durations
 
@@ -242,19 +242,19 @@ def return_to_wet_date(wet_filter_data, wet_threshold_perc):
 
 def _plotter(x_axis, flow_data, filter_data, wet_filter_data, start_dates, wet_dates, column_number, left, right, maxarray, minarray, min_flush_magnitude):
     plt.figure()
-    plt.plot(x_axis, flow_data, '.')
-    plt.plot(x_axis, filter_data)
+    #plt.plot(x_axis, flow_data, '-')
+    plt.plot(x_axis, filter_data, '-', color='#5993E5') #greyish blue
     #plt.plot(x_axis, wet_filter_data)
     # for data in maxarray:
     #     plt.plot(data[0], data[1], '^')
     # for data in minarray:
     #     plt.plot(data[0], data[1], 'v')
     if start_dates[-1] is not None:
-        plt.axvline(start_dates[-1], color='blue')
-    plt.axvline(wet_dates[-1], color="green")
+        plt.axvline(start_dates[-1], color='blue', ls=':')
+    plt.axvline(wet_dates[-1], color="green", ls=':')
     #plt.axvline(left, ls=":")
     #plt.axvline(right, ls=":")
     if min_flush_magnitude is not None:
-        plt.axhline(min_flush_magnitude, ls='--', color = 'red')
+        plt.axhline(min_flush_magnitude, ls=':', color = 'red')
     #plt.yscale('log')
     plt.savefig('post_processedFiles/Boxplots/{}.png'.format(column_number))

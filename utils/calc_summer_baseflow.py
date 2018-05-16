@@ -18,13 +18,6 @@ def calc_start_of_summer(matrix):
     start_dates = []
     for column_number, flow_data in enumerate(matrix[0]):
         start_dates.append(None)
-
-        """Check annual cumulative flow"""
-        ann_cumulation = sum(matrix[:, column_number])
-        zero_flow = np.count_nonzero(matrix[:, column_number]==0)
-        low_flow = sum(float(num) < 0.5 for num in matrix[:, column_number])
-        print('for year',column_number+1966, 'cum flow is',ann_cumulation, 'zeros are', zero_flow, 'low flow is', low_flow)
-
         """Check if data has too many zeros or NaN, and if so skip to next water year"""
         if np.isnan(matrix[:, column_number]).sum() > max_nan_allowed_per_year or np.count_nonzero(matrix[:, column_number]==0) > max_zero_allowed_per_year:
             continue;
@@ -39,7 +32,8 @@ def calc_start_of_summer(matrix):
         flow_data = replace_nan(flow_data)
 
         """Smooth out the timeseries"""
-        smooth_data = gaussian_filter1d(flow_data, sigma)
+        smooth_data = gaussian_filter1d(flow_data, 4)
+        smooth_data2 = gaussian_filter1d(flow_data, 12)
         x_axis = list(range(len(smooth_data)))
 
         """Find spline fit equation for smoothed timeseries, and find derivative of spline"""
@@ -72,7 +66,7 @@ def calc_start_of_summer(matrix):
                 start_dates[-1] = index
                 break
 
-        # _summer_baseflow_plot(x_axis, column_number, flow_data, spl, spl_first, start_dates, threshold, max_flow_index, maxarray)
+        _summer_baseflow_plot(x_axis, column_number, flow_data, spl, spl_first, start_dates, threshold, max_flow_index, maxarray, smooth_data, smooth_data2)
 
     return start_dates
 
@@ -131,21 +125,15 @@ def calc_summer_baseflow_durations_magnitude(flow_matrix, summer_start_dates, fa
 
     return summer_10_magnitudes, summer_50_magnitudes, summer_flush_durations, summer_wet_durations, summer_no_flow_counts
 
-def _summer_baseflow_plot(x_axis, column_number, flow_data, spl, spl_first, start_dates, threshold, max_flow_index, maxarray):
-
+def _summer_baseflow_plot(x_axis, column_number, flow_data, spl, spl_first, start_dates, threshold, max_flow_index, maxarray, smooth_data, smooth_data2):
+    plt.close('all')
     plt.figure(column_number)
-
-    plt.plot(x_axis, spl_first(x_axis), color='red') #spl 1st derivative
-    plt.plot(flow_data, '-', color='blue') #raw
-    plt.plot(x_axis, spl(x_axis),'--', color='orange') #spline
-    plt.title('Start of Summer Metric')
-    plt.xlabel('Julian Day')
-    plt.ylabel('Flow, ft^3/s')
-    if start_dates[-1] is not None:
-        plt.axvline(start_dates[-1], color='red')
-    plt.axhline(threshold, color = 'green')
-    plt.axvline(max_flow_index, ls=':')
-    for data in maxarray:
-        plt.plot(data[0], data[1], '^')
+    plt.plot(flow_data, '-', color='black', label='raw data', linewidth=.5) #raw
+    plt.plot(smooth_data, '--', color='blue', label=r'$\sigma=4$') #orange #ef6c00
+    plt.plot(smooth_data2, '-.', color='red', label=r'$\sigma=12$') #green #2be22e
+    plt.title('Daily Flow Time Series Smoothing')
+    plt.xlabel('Time (days)')
+    plt.ylabel(r'Flow ($ft^3/s$)')
+    plt.legend()
 
     plt.savefig('post_processedFiles/Boxplots/{}.png'.format(column_number))
