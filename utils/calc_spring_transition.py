@@ -188,19 +188,22 @@ def calc_spring_transition_roc(flow_matrix, spring_timings, summer_timings):
 def _spring_transition_plotter(x_axis, flow_data, filter_data, x_axis_window, spl_first_deriv, new_index, max_flow_index, timing, search_window_left, search_window_right, spl, column_number, maxarray):
 
     plt.figure()
-    plt.plot(x_axis, flow_data)
-    plt.plot(x_axis, filter_data)
-    plt.plot(x_axis_window, spl_first_deriv(x_axis_window))
-    plt.plot(new_index, spl_first_deriv(new_index), 'x')
+    plt.plot(x_axis, flow_data, color='steelblue', ls='-', label='raw data')
+    plt.plot(x_axis, filter_data, color='darkorange', ls='-',label=r'G1, $\sigma=10$')
+    plt.plot(x_axis_window, spl_first_deriv(x_axis_window), color='red')
+    # plt.plot(new_index, spl_first_deriv(new_index), 'x')
 
     plt.axvline(x = max_flow_index, color='green', ls=':')
-    plt.axvline(x = timing[-1], color='red')
-    plt.axvline(x = max_flow_index - search_window_left)
-    plt.axvline(x = max_flow_index + search_window_right)
+    # plt.axvline(x = timing[-1], color='red')
+    plt.axvline(x = max_flow_index - current_search_window_left, color='orange', ls=':')
+    plt.axvline(x = max_flow_index + current_search_window_right, color='orange', ls=':')
+    plt.xlabel('Time (days)')
+    plt.ylabel(r'Flow')
 
-    for data in maxarray:
-        plt.plot(data[0], data[1], '^')
+    # for data in maxarray:
+    #     plt.plot(data[0], data[1], '^')
 
-    plt.plot(x_axis_window, spl(x_axis_window))
+    plt.plot(x_axis_window, spl(x_axis_window), color='black', label=r'G2, $\sigma=1.3$')
     # plt.yscale('log')
+    plt.legend()
     plt.savefig('post_processedFiles/Boxplots/{}.png'.format(column_number))
